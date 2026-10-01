@@ -5,10 +5,25 @@ Mac app that turns PDF, PNG, and JPG into text using [baidu/Unlimited-OCR](https
 ## Run
 
 ```bash
-uv venv .venv --python 3.12
-uv pip install -U "mlx-vlm>=0.6.8" jinja2 --python .venv/bin/python
+bash scripts/install.sh
+.venv/bin/python app.py
+```
+
+Open http://127.0.0.1:8766, drop a PDF, PNG, or JPG, then convert. History downloads stay on this computer.
+
+Convert from the terminal:
+
+```bash
+.venv/bin/python app.py photo.png notes.pdf
+```
+
+On a Mac you can also open the menu-bar app after install:
+
+```bash
 open "Image to Text.app"
 ```
+
+Apple Silicon uses the 8-bit model. Other computers use the 4-bit model so it fits in memory. Set `OCR_MODEL` to override. A page can take several minutes on CPU.
 
 Drop files, convert, then download from History. Rebuild after editing `App.swift`:
 

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Image to Text</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1c1915;
+      --muted: #6b645c;
+      --line: #e4ddd4;
+      --paper: #f6f1ea;
+      --card: #fffdf9;
+      --accent: #9a3412;
+      --accent-ink: #fff7ed;
+      --danger: #9f1239;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 16px/1.45 "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 32px 20px 64px; }
+    h1 { font-size: 32px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); margin: 0 0 20px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    button, .file-btn {
+      font: 15px/1 "Segoe UI", sans-serif;
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: white;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+    button.secondary, .file-btn { background: var(--card); color: var(--ink); }
+    button:disabled { opacity: 0.45; cursor: default; }
+    .drop {
+      margin: 16px 0;
+      min-height: 180px;
+      border: 1.5px dashed #c4b8aa;
+      border-radius: 12px;
+      background: var(--card);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 16px;
+      color: var(--muted);
+    }
+    .drop.over { border-color: var(--accent); background: #fff7ed; }
+    .drop img { max-width: 100%; max-height: 220px; }
+    .status { min-height: 1.4em; color: var(--muted); }
+    .status.bad { color: var(--danger); }
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      margin-top: 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      font: 15px/1.5 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      background: var(--card);
+      color: var(--ink);
+      resize: vertical;
+    }
+    h2 { font-size: 18px; margin: 28px 0 8px; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    a { color: var(--accent); }
+    .empty { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Image to Text</h1>
+    <p class="sub">Drop a PDF, PNG, or JPG. Unlimited-OCR reads it on this computer.</p>
+    <div class="row">
+      <label class="file-btn">Choose files<input id="picker" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" multiple hidden /></label>
+      <button id="convert" disabled>Convert</button>
+      <button id="download" class="secondary" disabled>Download .txt</button>
+      <button id="clear" class="secondary">Clear</button>
+    </div>
+    <div id="drop" class="drop">Drop PDF, PNG, or JPG — several at once is fine</div>
+    <p id="status" class="status">Loading Unlimited-OCR…</p>
+    <textarea id="text" readonly placeholder="Converted text shows up here."></textarea>
+    <h2>History</h2>
+    <ul id="history"></ul>
+  </main>
+  <script>
+    const drop = document.querySelector("#drop");
+    const picker = document.querySelector("#picker");
+    const convertBtn = document.querySelector("#convert");
+    const downloadBtn = document.querySelector("#download");
+    const clearBtn = document.querySelector("#clear");
+    const statusEl = document.querySelector("#status");
+    const textEl = document.querySelector("#text");
+    const historyEl = document.querySelector("#history");
+    let files = [];
+    let ready = false;
+
+    function setStatus(message, bad) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle("bad", !!bad);
+    }
+
+    function renderFiles() {
+      convertBtn.disabled = !ready || files.length === 0;
+      if (!files.length) {
+        drop.textContent = "Drop PDF, PNG, or JPG — several at once is fine";
+        return;
+      }
+      drop.textContent = files.map((f) => f.name).join(" · ");
+    }
+
+    function addFiles(list) {
+      const next = [...list].filter((f) => /\.(pdf|png|jpe?g)$/i.test(f.name));
+      if (!next.length) {
+        setStatus("Use PDF, PNG, or JPG.", true);
+        return;
+      }
+      files = next;
+      renderFiles();
+      setStatus(next.length + " file" + (next.length === 1 ? "" : "s") + " ready.", false);
+    }
+
+    picker.addEventListener("change", () => addFiles(picker.files));
+    drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+    drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+    drop.addEventListener("drop", (e) => {
+      e.preventDefault();
+      drop.classList.remove("over");
+      addFiles(e.dataTransfer.files);
+    });
+    clearBtn.addEventListener("click", () => {
+      files = [];
+      picker.value = "";
+      textEl.value = "";
+      downloadBtn.disabled = true;
+      renderFiles();
+      setStatus(ready ? "Unlimited-OCR ready. Drop PDF, PNG, or JPG." : "Loading Unlimited-OCR…", false);
+    });
+
+    function b64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1]);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    convertBtn.addEventListener("click", async () => {
+      convertBtn.disabled = true;
+      downloadBtn.disabled = true;
+      const parts = [];
+      try {
+        for (let i = 0; i < files.length; i++) {
+          setStatus("Reading " + (i + 1) + " of " + files.length + "… On a CPU this can take several minutes.", false);
+          const res = await fetch("/file", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: files[i].name, data: await b64(files[i]) }),
+          });
+          const body = await res.json();
+          if (!res.ok) throw new Error(body.error || "Convert failed");
+          parts.push("=== " + files[i].name + " ===\n" + body.text);
+        }
+        textEl.value = parts.join("\n\n");
+        downloadBtn.disabled = !textEl.value.trim();
+        setStatus("Saved to History.", false);
+        loadHistory();
+      } catch (err) {
+        setStatus(err.message || String(err), true);
+      } finally {
+        convertBtn.disabled = files.length === 0 || !ready;
+      }
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      const blob = new Blob([textEl.value], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "image-to-text.txt";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    async function loadHistory() {
+      const res = await fetch("/history");
+      const body = await res.json();
+      historyEl.innerHTML = "";
+      if (!body.files.length) {
+        const li = document.createElement("li");
+        li.className = "empty";
+        li.textContent = "Converted text files show up here.";
+        historyEl.appendChild(li);
+        return;
+      }
+      for (const file of body.files) {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        name.textContent = file.name;
+        const link = document.createElement("a");
+        link.href = "/history/" + encodeURIComponent(file.name);
+        link.textContent = "Download";
+        li.append(name, link);
+        historyEl.appendChild(li);
+      }
+    }
+
+    async function poll() {
+      try {
+        const res = await fetch("/health");
+        const body = await res.json();
+        if (res.ok && body.ok) {
+          ready = true;
+          if (!files.length && !textEl.value) setStatus("Unlimited-OCR ready. Drop PDF, PNG, or JPG.", false);
+          renderFiles();
+          return;
+        }
+        const loading = !body.error || body.error === "loading";
+        setStatus(loading ? "Loading Unlimited-OCR…" : body.error, !loading);
+      } catch (err) {
+        setStatus("Loading Unlimited-OCR…", false);
+      }
+      setTimeout(poll, 1000);
+    }
+
+    loadHistory();
+    poll();
+  </script>
+</body>
+</html>
