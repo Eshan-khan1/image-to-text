@@ -7,96 +7,224 @@
   <style>
     :root {
       color-scheme: light;
-      --ink: #1c1915;
-      --muted: #6b645c;
-      --line: #e4ddd4;
-      --paper: #f6f1ea;
-      --card: #fffdf9;
-      --accent: #9a3412;
-      --accent-ink: #fff7ed;
-      --danger: #9f1239;
+      --desktop: #c8c8cc;
+      --title: #ececee;
+      --sidebar: #f5f5f7;
+      --paper: #ffffff;
+      --line: #d2d2d7;
+      --ink: #1d1d1f;
+      --muted: #6e6e73;
+      --blue: #007aff;
+      --blue-press: #0063d1;
+      --danger: #ff3b30;
+      --select: #d6e6ff;
+      font: 13px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     }
     * { box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       margin: 0;
-      font: 16px/1.45 "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
       color: var(--ink);
+      background: var(--desktop);
+      display: grid;
+      place-items: center;
+      min-height: 100%;
+    }
+    .window {
+      width: min(1040px, calc(100vw - 48px));
+      height: min(700px, calc(100vh - 48px));
       background: var(--paper);
+      border: 1px solid rgba(0, 0, 0, 0.22);
+      border-radius: 10px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22), 0 0 0 0.5px rgba(255, 255, 255, 0.4) inset;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
-    main { max-width: 880px; margin: 0 auto; padding: 32px 20px 64px; }
-    h1 { font-size: 32px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.02em; }
-    .sub { color: var(--muted); margin: 0 0 20px; }
-    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .titlebar {
+      height: 38px;
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px 0 14px;
+      background: linear-gradient(#f6f6f8, var(--title));
+      border-bottom: 1px solid #e1e1e4;
+    }
+    .toolbar {
+      height: 38px;
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 12px;
+      background: #f6f6f8;
+      border-bottom: 1px solid var(--line);
+    }
+    .lights { display: flex; gap: 8px; width: 68px; }
+    .lights i {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: block;
+      box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.18);
+    }
+    .lights .close { background: #ff5f57; }
+    .lights .min { background: #febc2e; }
+    .lights .zoom { background: #28c840; }
+    .title {
+      flex: 1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 13px;
+      margin-right: 68px;
+    }
     button, .file-btn {
-      font: 15px/1 "Segoe UI", sans-serif;
-      border: 1px solid var(--ink);
-      background: var(--ink);
-      color: white;
-      border-radius: 8px;
-      padding: 10px 14px;
+      font: 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 6px;
+      border: 1px solid #c6c6c8;
+      background: linear-gradient(#fff, #f3f3f5);
+      color: var(--ink);
       cursor: pointer;
+      box-shadow: inset 0 0.5px 0 #fff;
     }
-    button.secondary, .file-btn { background: var(--card); color: var(--ink); }
-    button:disabled { opacity: 0.45; cursor: default; }
-    .drop {
-      margin: 16px 0;
-      min-height: 180px;
-      border: 1.5px dashed #c4b8aa;
-      border-radius: 12px;
-      background: var(--card);
+    button.primary {
+      background: linear-gradient(#3d94ff, var(--blue));
+      border-color: #0066d6;
+      color: white;
+      font-weight: 590;
+    }
+    button.primary:disabled { background: #b7d7ff; border-color: #b7d7ff; color: white; }
+    button:disabled, .file-btn:disabled { opacity: 0.55; cursor: default; }
+    .body { flex: 1; display: flex; min-height: 0; }
+    .sidebar {
+      width: 248px;
+      flex: none;
+      background: var(--sidebar);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .label {
+      margin: 12px 14px 6px;
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+    #drop {
+      margin: 0 12px 8px;
+      min-height: 92px;
+      border: 1px dashed #b5b5ba;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--muted);
       display: grid;
       place-items: center;
       text-align: center;
-      padding: 16px;
-      color: var(--muted);
+      padding: 10px;
     }
-    .drop.over { border-color: var(--accent); background: #fff7ed; }
-    .drop img { max-width: 100%; max-height: 220px; }
-    .status { min-height: 1.4em; color: var(--muted); }
-    .status.bad { color: var(--danger); }
-    textarea {
-      width: 100%;
-      min-height: 180px;
-      margin-top: 8px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 12px;
-      font: 15px/1.5 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-      background: var(--card);
-      color: var(--ink);
-      resize: vertical;
+    #drop.over { border-color: var(--blue); background: #eaf3ff; color: var(--ink); }
+    #queue, #history {
+      list-style: none;
+      margin: 0;
+      padding: 0 8px;
+      overflow: auto;
     }
-    h2 { font-size: 18px; margin: 28px 0 8px; }
-    ul { list-style: none; padding: 0; margin: 0; }
-    li {
+    #history { flex: 1; }
+    #queue li, #history li {
       display: flex;
-      justify-content: space-between;
-      gap: 12px;
       align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--line);
+      gap: 8px;
+      min-height: 28px;
+      padding: 4px 8px;
+      border-radius: 6px;
     }
-    a { color: var(--accent); }
-    .empty { color: var(--muted); }
+    #history li { cursor: pointer; }
+    #history li:hover, #queue li:hover { background: rgba(0, 0, 0, 0.04); }
+    #history li.on { background: var(--select); }
+    #queue li span, #history li span {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    a.download {
+      color: var(--blue);
+      text-decoration: none;
+      font-size: 12px;
+      flex: none;
+    }
+    .empty { color: var(--muted); cursor: default !important; }
+    .editor { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--paper); }
+    textarea {
+      flex: 1;
+      width: 100%;
+      border: 0;
+      resize: none;
+      padding: 16px 18px;
+      font: 13px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      color: var(--ink);
+      background: transparent;
+      outline: none;
+    }
+    .status {
+      flex: none;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      border-top: 1px solid var(--line);
+      background: #f6f6f8;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .status.bad { color: var(--danger); }
+    body.shell { background: var(--paper); display: block; }
+    body.shell .window {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    body.shell .titlebar { display: none; }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Image to Text</h1>
-    <p class="sub">Drop a PDF, PNG, or JPG. Unlimited-OCR reads it on this computer.</p>
-    <div class="row">
-      <label class="file-btn">Choose files<input id="picker" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" multiple hidden /></label>
-      <button id="convert" disabled>Convert</button>
-      <button id="download" class="secondary" disabled>Download .txt</button>
-      <button id="clear" class="secondary">Clear</button>
+  <div class="window">
+    <div class="titlebar">
+      <div class="lights" aria-hidden="true"><i class="close"></i><i class="min"></i><i class="zoom"></i></div>
+      <div class="title">Image to Text</div>
     </div>
-    <div id="drop" class="drop">Drop PDF, PNG, or JPG — several at once is fine</div>
-    <p id="status" class="status">Loading Unlimited-OCR…</p>
-    <textarea id="text" readonly placeholder="Converted text shows up here."></textarea>
-    <h2>History</h2>
-    <ul id="history"></ul>
-  </main>
+    <div class="toolbar">
+      <label class="file-btn">Choose<input id="picker" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" multiple hidden /></label>
+      <button id="convert" class="primary" disabled>Convert</button>
+      <button id="download" disabled>Download</button>
+      <button id="clear">Clear</button>
+    </div>
+    <div class="body">
+      <aside class="sidebar">
+        <div class="label">FILES</div>
+        <div id="drop">Drop PDF, PNG, or JPG</div>
+        <ul id="queue"></ul>
+        <div class="label">HISTORY</div>
+        <ul id="history"></ul>
+      </aside>
+      <section class="editor">
+        <textarea id="text" readonly placeholder="Converted text shows up here."></textarea>
+        <div id="status" class="status">Loading Unlimited-OCR…</div>
+      </section>
+    </div>
+  </div>
   <script>
+    if (new URLSearchParams(location.search).get("shell") === "1") {
+      document.body.classList.add("shell");
+    }
     const drop = document.querySelector("#drop");
     const picker = document.querySelector("#picker");
     const convertBtn = document.querySelector("#convert");
@@ -105,6 +233,7 @@
     const statusEl = document.querySelector("#status");
     const textEl = document.querySelector("#text");
     const historyEl = document.querySelector("#history");
+    const queueEl = document.querySelector("#queue");
     let files = [];
     let ready = false;
 
@@ -115,11 +244,19 @@
 
     function renderFiles() {
       convertBtn.disabled = !ready || files.length === 0;
+      queueEl.innerHTML = "";
       if (!files.length) {
-        drop.textContent = "Drop PDF, PNG, or JPG — several at once is fine";
+        drop.textContent = "Drop PDF, PNG, or JPG";
         return;
       }
-      drop.textContent = files.map((f) => f.name).join(" · ");
+      drop.textContent = files.length + " file" + (files.length === 1 ? "" : "s") + " ready";
+      for (const file of files) {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        name.textContent = file.name;
+        li.append(name);
+        queueEl.appendChild(li);
+      }
     }
 
     function addFiles(list) {
@@ -147,7 +284,8 @@
       textEl.value = "";
       downloadBtn.disabled = true;
       renderFiles();
-      setStatus(ready ? "Unlimited-OCR ready. Drop PDF, PNG, or JPG." : "Loading Unlimited-OCR…", false);
+      document.querySelectorAll("#history li.on").forEach((el) => el.classList.remove("on"));
+      setStatus(ready ? "Ready. Drop PDF, PNG, or JPG." : "Loading Unlimited-OCR…", false);
     });
 
     function b64(file) {
@@ -195,6 +333,16 @@
       URL.revokeObjectURL(a.href);
     });
 
+    async function showHistory(name, row) {
+      const res = await fetch("/history/" + encodeURIComponent(name));
+      if (!res.ok) return;
+      textEl.value = await res.text();
+      downloadBtn.disabled = !textEl.value.trim();
+      document.querySelectorAll("#history li.on").forEach((el) => el.classList.remove("on"));
+      row.classList.add("on");
+      setStatus(name, false);
+    }
+
     async function loadHistory() {
       const res = await fetch("/history");
       const body = await res.json();
@@ -202,7 +350,7 @@
       if (!body.files.length) {
         const li = document.createElement("li");
         li.className = "empty";
-        li.textContent = "Converted text files show up here.";
+        li.textContent = "No conversions yet";
         historyEl.appendChild(li);
         return;
       }
@@ -211,9 +359,14 @@
         const name = document.createElement("span");
         name.textContent = file.name;
         const link = document.createElement("a");
+        link.className = "download";
         link.href = "/history/" + encodeURIComponent(file.name);
         link.textContent = "Download";
         li.append(name, link);
+        li.addEventListener("click", (event) => {
+          if (event.target === link) return;
+          showHistory(file.name, li);
+        });
         historyEl.appendChild(li);
       }
     }
@@ -224,7 +377,7 @@
         const body = await res.json();
         if (res.ok && body.ok) {
           ready = true;
-          if (!files.length && !textEl.value) setStatus("Unlimited-OCR ready. Drop PDF, PNG, or JPG.", false);
+          if (!files.length && !textEl.value) setStatus("Ready. Drop PDF, PNG, or JPG.", false);
           renderFiles();
           return;
         }
