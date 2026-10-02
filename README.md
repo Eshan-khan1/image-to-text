@@ -2,7 +2,7 @@
 
 Mac app that turns a PDF, PNG, or JPG into text on your computer. It uses [baidu/Unlimited-OCR](https://huggingface.co/baidu/Unlimited-OCR). The file is not uploaded to a writing service.
 
-**Download:** [Image to Text (zip)](https://github.com/Eshan-khan1/image-to-text/archive/refs/heads/cursor/complete-image-to-text-d871.zip)
+**Download:** [Image to Text (zip)](https://github.com/Eshan-khan1/image-to-text/archive/refs/heads/main.zip)
 
 Unzip that file, then follow [Open it on a Mac](#open-it-on-a-mac) below.
 
@@ -37,7 +37,7 @@ The window talks only to a server on this Mac at `127.0.0.1:8766`. History is sa
 
 ## Open it on a Mac
 
-1. Download and unzip [Image to Text (zip)](https://github.com/Eshan-khan1/image-to-text/archive/refs/heads/cursor/complete-image-to-text-d871.zip).
+1. Download and unzip [Image to Text (zip)](https://github.com/Eshan-khan1/image-to-text/archive/refs/heads/main.zip).
 2. Open Terminal, go into the unzipped folder, and run:
 
 ```bash
