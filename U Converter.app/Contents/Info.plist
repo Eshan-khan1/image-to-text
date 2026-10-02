@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleName</key>
-  <string>Image to Text</string>
+  <string>U Converter</string>
   <key>CFBundleDisplayName</key>
-  <string>Image to Text</string>
+  <string>U Converter</string>
   <key>CFBundleIdentifier</key>
-  <string>local.imagetotext</string>
+  <string>local.uconverter</string>
   <key>CFBundleVersion</key>
   <string>1</string>
   <key>CFBundleShortVersionString</key>
   <string>1.0</string>
   <key>CFBundleExecutable</key>
-  <string>Image to Text</string>
+  <string>U Converter</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>LSMinimumSystemVersion</key>

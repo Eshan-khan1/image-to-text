@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Image to Text</title>
+  <title>U Converter</title>
   <style>
     :root {
       color-scheme: light;
@@ -18,7 +18,52 @@
       --blue-press: #0063d1;
       --danger: #ff3b30;
       --select: #d6e6ff;
+      --bar: #f6f6f8;
+      --control-line: #c6c6c8;
+      --control-top: #ffffff;
+      --control-bottom: #f3f3f5;
+      --primary-off: #b7d7ff;
+      --dash: #b5b5ba;
+      --soft-line: #e5e5ea;
+      --field: #ffffff;
+      --hover: rgba(0, 0, 0, 0.05);
+      --tint: #eef5ff;
+      --drop-bg: rgba(255, 255, 255, 0.72);
+      --ext-bg: #eef3fb;
+      --busy-bg: #f2f2f4;
+      --bad-bg: #fdecea;
+      --home-top: #fbfbfd;
+      --home-bottom: #eef0f4;
       font: 13px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --desktop: #141416;
+      --title: #2a2a2c;
+      --sidebar: #232325;
+      --paper: #1e1e20;
+      --line: #3a3a3c;
+      --ink: #f2f2f7;
+      --muted: #98989d;
+      --blue: #0a84ff;
+      --danger: #ff453a;
+      --select: #1f3a5f;
+      --bar: #2a2a2c;
+      --control-line: #4a4a4e;
+      --control-top: #3a3a3c;
+      --control-bottom: #323234;
+      --primary-off: #24456e;
+      --dash: #5a5a5e;
+      --soft-line: #38383a;
+      --field: #2c2c2e;
+      --hover: rgba(255, 255, 255, 0.07);
+      --tint: #1b2a40;
+      --drop-bg: rgba(255, 255, 255, 0.04);
+      --ext-bg: #1f2d44;
+      --busy-bg: #2c2c2e;
+      --bad-bg: #3d1f1d;
+      --home-top: #1e1e20;
+      --home-bottom: #18181a;
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
@@ -48,8 +93,8 @@
       align-items: center;
       gap: 10px;
       padding: 0 12px 0 14px;
-      background: linear-gradient(#f6f6f8, var(--title));
-      border-bottom: 1px solid #e1e1e4;
+      background: linear-gradient(var(--bar), var(--title));
+      border-bottom: 1px solid var(--line);
     }
     .toolbar {
       height: 38px;
@@ -58,7 +103,7 @@
       align-items: center;
       gap: 6px;
       padding: 0 12px;
-      background: #f6f6f8;
+      background: var(--bar);
       border-bottom: 1px solid var(--line);
     }
     .lights { display: flex; gap: 8px; width: 68px; }
@@ -84,11 +129,11 @@
       height: 24px;
       padding: 0 10px;
       border-radius: 6px;
-      border: 1px solid #c6c6c8;
-      background: linear-gradient(#fff, #f3f3f5);
+      border: 1px solid var(--control-line);
+      background: linear-gradient(var(--control-top), var(--control-bottom));
       color: var(--ink);
       cursor: pointer;
-      box-shadow: inset 0 0.5px 0 #fff;
+      box-shadow: inset 0 0.5px 0 var(--control-top);
     }
     button.primary {
       background: linear-gradient(#3d94ff, var(--blue));
@@ -96,8 +141,9 @@
       color: white;
       font-weight: 590;
     }
-    button.primary:disabled { background: #b7d7ff; border-color: #b7d7ff; color: white; }
+    button.primary:disabled { background: var(--primary-off); border-color: var(--primary-off); color: white; }
     button:disabled, .file-btn:disabled { opacity: 0.55; cursor: default; }
+    .file-btn { display: inline-flex; align-items: center; box-sizing: border-box; }
     .body { flex: 1; display: flex; min-height: 0; }
     .sidebar {
       width: 248px;
@@ -118,16 +164,16 @@
     #drop {
       margin: 0 12px 8px;
       min-height: 92px;
-      border: 1px dashed #b5b5ba;
+      border: 1px dashed var(--dash);
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.72);
+      background: var(--drop-bg);
       color: var(--muted);
       display: grid;
       place-items: center;
       text-align: center;
       padding: 10px;
     }
-    #drop.over { border-color: var(--blue); background: #eaf3ff; color: var(--ink); }
+    #drop.over { border-color: var(--blue); background: var(--tint); color: var(--ink); }
     #queue, #history {
       list-style: none;
       margin: 0;
@@ -144,7 +190,7 @@
       border-radius: 6px;
     }
     #history li { cursor: pointer; }
-    #history li:hover, #queue li:hover { background: rgba(0, 0, 0, 0.04); }
+    #history li:hover, #queue li:hover { background: var(--hover); }
     #history li.on { background: var(--select); }
     #queue li span, #history li span {
       flex: 1;
@@ -179,7 +225,7 @@
       align-items: center;
       padding: 0 12px;
       border-top: 1px solid var(--line);
-      background: #f6f6f8;
+      background: var(--bar);
       color: var(--muted);
       font-size: 11px;
     }
@@ -193,14 +239,317 @@
       box-shadow: none;
     }
     body.shell .titlebar { display: none; }
+    .topbar {
+      flex: none;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+      background: var(--bar);
+      border-bottom: 1px solid var(--line);
+      font-weight: 600;
+    }
+    .topbar[hidden] { display: none; }
+    .topbar .icon { width: 26px; height: 26px; border-radius: 7px; box-shadow: none; }
+    .topbar .icon .page, .topbar .icon .badge { display: none; }
+    #home { flex: 1; overflow: auto; padding: 22px 28px 32px; background: linear-gradient(var(--home-top), var(--home-bottom)); }
+    #home h2 { margin: 0; font-size: 22px; font-weight: 700; }
+    .home-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    #search {
+      flex: none;
+      width: 220px;
+      height: 28px;
+      padding: 0 10px;
+      border: 1px solid var(--control-line);
+      border-radius: 8px;
+      background: var(--field);
+      color: var(--ink);
+      font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      outline: none;
+    }
+    #search:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2); }
+    .app[hidden] { display: none; }
+    .grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px 6px; }
+    .app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      height: auto;
+      padding: 12px 4px 10px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      box-shadow: none;
+      font-size: 12px;
+      line-height: 1.25;
+      text-align: center;
+    }
+    .app:hover { background: var(--hover); }
+    .app:active .icon { transform: scale(0.94); }
+    .icon {
+      --a: #8e8e93;
+      --b: #636366;
+      position: relative;
+      flex: none;
+      width: 62px;
+      height: 62px;
+      border-radius: 15px;
+      background: linear-gradient(150deg, var(--a), var(--b));
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      transition: transform 0.1s;
+    }
+    .icon .page {
+      position: absolute;
+      left: 15px;
+      top: 9px;
+      width: 32px;
+      height: 40px;
+      border-radius: 4px;
+      background: white;
+      clip-path: polygon(0 0, 68% 0, 100% 24%, 100% 100%, 0 100%);
+      display: grid;
+      place-items: center;
+      padding-top: 6px;
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--b);
+    }
+    .icon .badge {
+      position: absolute;
+      right: 5px;
+      bottom: 6px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.45);
+      color: white;
+      font-size: 8.5px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+    #mode-tool .stage { flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 22px 28px; min-height: 0; }
+    #tdrop {
+      flex: none;
+      height: 210px;
+      border: 2px dashed var(--dash);
+      border-radius: 16px;
+      background: var(--paper);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+      cursor: pointer;
+      text-align: center;
+    }
+    #tdrop strong { color: var(--ink); font-size: 15px; }
+    #tdrop .icon { width: 72px; height: 72px; border-radius: 17px; }
+    body.dragging #tdrop, #tdrop:hover { border-color: var(--blue); background: var(--tint); }
+    .results { list-style: none; margin: 0; padding: 0; overflow: auto; flex: 1; }
+    .card {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border: 1px solid var(--soft-line);
+      border-radius: 12px;
+      background: var(--paper);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    .card .ext {
+      flex: none;
+      width: 40px;
+      height: 46px;
+      border-radius: 6px;
+      background: var(--ext-bg);
+      color: var(--blue);
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .card .info { flex: 1 1 140px; min-width: 0; }
+    .card .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card .meta { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card button { height: 30px; padding: 0 14px; border-radius: 8px; font-size: 13px; }
+    .card.busy .ext { background: var(--busy-bg); color: var(--muted); }
+    .card.bad .ext { background: var(--bad-bg); color: var(--danger); }
+    .card.bad .name { color: var(--danger); }
+    .spinner { width: 18px; height: 18px; border: 2px solid var(--dash); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .results-head { display: flex; align-items: center; justify-content: space-between; min-height: 30px; }
+    .results-head[hidden] { display: none; }
+    .results-head strong { font-size: 13px; }
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 44px;
+      transform: translate(-50%, 20px);
+      padding: 9px 16px;
+      border-radius: 10px;
+      background: rgba(30, 30, 32, 0.92);
+      color: white;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      max-width: 80%;
+      text-align: center;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .row { display: flex; align-items: center; gap: 8px; }
+    .row[hidden] { display: none; }
+    .row label { color: var(--muted); }
+    .row input, .row select { height: 28px; }
+    .row input[type="password"], .row input[type="number"], .row input[type="datetime-local"] {
+      padding: 0 8px;
+      border: 1px solid var(--control-line);
+      border-radius: 6px;
+      font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+    #tqueue { list-style: none; margin: 0; padding: 0; max-height: 160px; overflow: auto; }
+    #tqueue li, .list li { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 4px 10px; border-radius: 8px; background: var(--paper); margin-bottom: 6px; border: 1px solid var(--soft-line); }
+    #tqueue li span, .list li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .x { height: 20px; padding: 0 7px; }
+    .calc { flex: 1; overflow: auto; padding: 22px 28px; display: flex; flex-direction: column; gap: 14px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chips button.on { background: linear-gradient(#3d94ff, var(--blue)); border-color: #0066d6; color: white; }
+    .list { list-style: none; margin: 0; padding: 0; }
+    .list li b { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .list li small { color: var(--muted); }
+    #uval { width: 160px; font-size: 15px; }
+    .mode { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .mode[hidden] { display: none; }
+    select, input[type="text"] {
+      font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      height: 24px;
+      border: 1px solid var(--control-line);
+      border-radius: 6px;
+      background: var(--field);
+      color: var(--ink);
+    }
+    input[type="text"] { flex: 1; padding: 0 8px; }
+    #cqueue select { flex: none; height: 22px; }
+    .drop {
+      margin: 0 12px 8px;
+      min-height: 92px;
+      border: 1px dashed var(--dash);
+      border-radius: 8px;
+      background: var(--drop-bg);
+      color: var(--muted);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 10px;
+    }
+    .drop.over { border-color: var(--blue); background: var(--tint); color: var(--ink); }
+    #cqueue { list-style: none; margin: 0; padding: 0 8px; overflow: auto; flex: 1; }
+    #results { padding: 8px 12px; }
+    #cqueue li { display: flex; align-items: center; gap: 8px; min-height: 28px; padding: 4px 8px; border-radius: 6px; }
+    #cqueue li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hint { color: var(--muted); padding: 16px 18px; }
+    .preview { flex: 1; display: grid; place-items: center; min-height: 0; padding: 24px; }
+    .preview img { max-width: min(360px, 100%); max-height: 100%; image-rendering: pixelated; }
+    #gear { width: 28px; height: 28px; padding: 0; border-radius: 8px; display: grid; place-items: center; color: var(--muted); }
+    #gear:hover { color: var(--ink); }
+    #gear svg { width: 16px; height: 16px; }
+    .setting { display: flex; flex-direction: column; gap: 4px; max-width: 520px; }
+    .setting strong { font-size: 15px; }
+    .setting small { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+    .themes { display: flex; gap: 14px; }
+    .themes button {
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 8px 10px;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      background: none;
+      box-shadow: none;
+      font-size: 12px;
+    }
+    .themes button:hover { background: var(--hover); }
+    .themes button.on { border-color: var(--blue); }
+    .swatch { width: 96px; height: 64px; border-radius: 8px; border: 1px solid var(--line); }
+    .swatch.light { background: linear-gradient(#ececee 0 22%, #ffffff 22%); }
+    .swatch.dark { background: linear-gradient(#2a2a2c 0 22%, #1e1e20 22%); }
+    .swatch.system {
+      background:
+        linear-gradient(#ececee 0 22%, #ffffff 22%) left / 50% 100% no-repeat,
+        linear-gradient(#2a2a2c 0 22%, #1e1e20 22%) right / 50% 100% no-repeat;
+    }
   </style>
+  <script>
+    const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+    function applyTheme() {
+      const choice = localStorage.getItem("theme") || "system";
+      const dark = choice === "dark" || (choice === "system" && darkQuery.matches);
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
+      document.querySelectorAll("#themes button").forEach((b) => b.classList.toggle("on", b.dataset.theme === choice));
+    }
+    darkQuery.addEventListener("change", applyTheme);
+    applyTheme();
+  </script>
 </head>
 <body>
   <div class="window">
     <div class="titlebar">
       <div class="lights" aria-hidden="true"><i class="close"></i><i class="min"></i><i class="zoom"></i></div>
-      <div class="title">Image to Text</div>
+      <div class="title">U Converter</div>
     </div>
+    <div class="topbar" id="topbar" hidden>
+      <button id="back">‹ All Tools</button>
+      <span id="crumb-icon"></span>
+      <span id="crumb"></span>
+    </div>
+    <div class="mode" id="mode-home">
+      <div id="home">
+        <div class="home-head">
+          <h2>U Converter</h2>
+          <div class="row">
+            <input id="search" type="search" placeholder="Search, e.g. PNG to JPG" autocomplete="off" autofocus />
+            <button id="gear" title="Settings (⌘,)" aria-label="Settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="sections" class="grid"></div>
+        <div id="nomatch" class="hint" hidden>No tools match. Try “pdf”, “jpg”, or “mp3”.</div>
+      </div>
+    </div>
+    <div class="mode" id="mode-tool" hidden>
+      <div class="stage">
+        <div id="topt" class="row" hidden></div>
+        <label id="tdrop">
+          <span id="tdrop-icon"></span>
+          <strong id="tdrop-title">Drop files here</strong>
+          <span id="tdrop-hint">or click to choose</span>
+          <input id="tpicker" type="file" multiple hidden />
+        </label>
+        <div id="tcombine" hidden>
+          <ul id="tqueue"></ul>
+          <div class="row"><button id="tmerge" class="primary">Merge into one PDF</button><label>Files are joined in this order.</label></div>
+        </div>
+        <div id="thead" class="results-head" hidden>
+          <strong>Your files</strong>
+          <button id="tall" class="primary">Download all</button>
+        </div>
+        <ul id="tresults" class="results"></ul>
+      </div>
+      <div id="tstatus" class="status">Converted files appear below. Click Download to save them.</div>
+    </div>
+    <div class="mode" id="mode-ocr" hidden>
     <div class="toolbar">
       <label class="file-btn">Choose<input id="picker" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" multiple hidden /></label>
       <button id="convert" class="primary" disabled>Convert</button>
@@ -220,7 +569,69 @@
         <div id="status" class="status">Loading Unlimited-OCR…</div>
       </section>
     </div>
+    </div>
+    <div class="mode" id="mode-convert" hidden>
+      <div class="toolbar">
+        <label class="file-btn">Choose<input id="cpicker" type="file" multiple hidden /></label>
+        <button id="cconvert" class="primary" disabled>Convert</button>
+        <button id="cclear">Clear</button>
+      </div>
+      <div class="body">
+        <aside class="sidebar">
+          <div class="label">FILES</div>
+          <div id="cdrop" class="drop">Drop files here</div>
+          <ul id="cqueue"></ul>
+        </aside>
+        <section class="editor">
+          <div class="label">YOUR FILES</div>
+          <ul id="results" class="results"><li class="hint">Drop any PDF, Word, text, spreadsheet, image, video, or audio file, then pick a format next to it.</li></ul>
+          <div id="cstatus" class="status">Pick a format next to each file, then click Convert.</div>
+        </section>
+      </div>
+    </div>
+    <div class="mode" id="mode-units" hidden>
+      <div class="calc">
+        <div id="ucats" class="chips"></div>
+        <div class="row"><input id="uval" type="number" value="1" step="any" /><select id="ufrom"></select></div>
+        <ul id="uall" class="list"></ul>
+      </div>
+    </div>
+    <div class="mode" id="mode-time" hidden>
+      <div class="calc">
+        <div class="row">
+          <input id="tzwhen" type="datetime-local" />
+          <label>in</label><select id="tzfrom"></select>
+          <button id="tznow">Now</button>
+        </div>
+        <ul id="tzlist" class="list"></ul>
+        <div class="row"><select id="tzadd"></select><button id="tzaddbtn">Add city</button></div>
+      </div>
+    </div>
+    <div class="mode" id="mode-qr" hidden>
+      <div class="toolbar">
+        <input id="qrtext" type="text" placeholder="Text or link, e.g. https://example.com" />
+        <select id="qrkind"><option value="png">PNG</option><option value="svg">SVG</option></select>
+        <button id="qrmake" class="primary">Generate</button>
+        <button id="qrsave" disabled>Download</button>
+      </div>
+      <div class="preview"><img id="qrimg" alt="" hidden /><div id="qrhint" class="hint">Type text or a link, then click Generate.</div></div>
+      <div id="qrstatus" class="status">QR codes are made on this Mac.</div>
+    </div>
+    <div class="mode" id="mode-settings" hidden>
+      <div class="calc">
+        <section class="setting">
+          <strong>Appearance</strong>
+          <small>Choose how U Converter looks.</small>
+          <div id="themes" class="themes">
+            <button data-theme="system"><span class="swatch system"></span>Match Mac</button>
+            <button data-theme="light"><span class="swatch light"></span>Light</button>
+            <button data-theme="dark"><span class="swatch dark"></span>Dark</button>
+          </div>
+        </section>
+      </div>
+    </div>
   </div>
+  <div id="toast"></div>
   <script>
     if (new URLSearchParams(location.search).get("shell") === "1") {
       document.body.classList.add("shell");
@@ -391,6 +802,693 @@
 
     loadHistory();
     poll();
+
+    const RASTER = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".heic"];
+    const VIDEO = [".mp4", ".mov", ".m4v", ".mkv", ".avi", ".webm"];
+    const AUDIO = [".mp3", ".m4a", ".wav", ".aac", ".flac", ".ogg"];
+    const GROUPS = {
+      pdf: [".pdf"],
+      word: [".doc", ".docx", ".rtf", ".odt"],
+      text: [".txt", ".md", ".html", ".htm"],
+      raster: RASTER,
+      image: [...RASTER, ".svg"],
+      video: VIDEO,
+      media: [...VIDEO, ...AUDIO],
+    };
+    const GROUP_LABEL = { pdf: "PDF", word: "Word", text: "text", raster: "image", image: "image", video: "video", media: "video or audio" };
+    const RED = ["#ff6b5e", "#d93025"], BLUE = ["#4f8ef7", "#1f5bc4"], GREEN = ["#4cd27a", "#1e9e50"];
+    const PURPLE = ["#b47cff", "#7a3fd9"], ORANGE = ["#ffae42", "#ef6c00"], TEAL = ["#3ccfd0", "#0f8f9a"], GRAY = ["#5d5d63", "#2c2c30"];
+    const PASSWORD = { label: "Password", type: "password", required: true };
+    const TOOLS = [
+      { name: "PDF to Word", from: ["pdf"], to: "docx", page: "PDF", badge: "DOC", color: BLUE },
+      { name: "PDF to JPG", from: ["pdf"], to: "jpg", page: "PDF", badge: "JPG", color: GREEN },
+      { name: "PDF to PNG", from: ["pdf"], to: "png", page: "PDF", badge: "PNG", color: TEAL },
+      { name: "PDF to Text", from: ["pdf"], to: "txt", page: "PDF", badge: "TXT", color: GRAY },
+      { name: "Merge PDF", from: ["pdf", "image"], to: "pdf", combine: true, min: 2, page: "PDF", badge: "JOIN", color: RED, keys: "combine join" },
+      { name: "Split PDF", from: ["pdf"], to: "split", page: "PDF", badge: "SPLIT", color: ORANGE, keys: "separate extract pages", hint: "Each page becomes its own PDF, in a .zip" },
+      { name: "Compress PDF", from: ["pdf"], to: "compress", page: "PDF", badge: "MIN", color: GREEN, keys: "shrink reduce smaller size" },
+      { name: "Rotate PDF", from: ["pdf"], to: "rotate", page: "PDF", badge: "ROT", color: TEAL, keys: "turn", option: { label: "Rotate", choices: [["90", "90° right"], ["180", "180°"], ["270", "90° left"]] } },
+      { name: "Protect PDF", from: ["pdf"], to: "protect", page: "PDF", badge: "LOCK", color: GRAY, keys: "password lock encrypt secure", option: PASSWORD },
+      { name: "Unlock PDF", from: ["pdf"], to: "unlock", page: "PDF", badge: "OPEN", color: PURPLE, keys: "remove password decrypt", option: PASSWORD },
+      { name: "Word to PDF", from: ["word"], to: "pdf", page: "DOC", badge: "PDF", color: RED, keys: "docx doc" },
+      { name: "Image to PDF", from: ["image"], to: "pdf", combine: true, min: 1, page: "IMG", badge: "PDF", color: RED, keys: "photo jpg png" },
+      { name: "Word to CSV", from: ["word"], to: "csv", page: "DOC", badge: "CSV", color: GREEN, keys: "table" },
+      { name: "Word to Text", from: ["word"], to: "txt", page: "DOC", badge: "TXT", color: GRAY },
+      { name: "DOC to DOCX", from: [".doc", ".rtf", ".odt"], to: "docx", page: "DOC", badge: "DOCX", color: BLUE, keys: "word old" },
+      { name: "Text to PDF", from: [".txt"], to: "pdf", page: "TXT", badge: "PDF", color: RED },
+      { name: "Markdown to PDF", from: [".md"], to: "pdf", page: "MD", badge: "PDF", color: RED },
+      { name: "HTML to PDF", from: [".html", ".htm"], to: "pdf", page: "HTML", badge: "PDF", color: RED, keys: "web page" },
+      { name: "Text to Word", from: ["text"], to: "docx", page: "TXT", badge: "DOC", color: BLUE, keys: "markdown html" },
+      { name: "Excel to CSV", from: [".xlsx"], to: "csv", page: "XLS", badge: "CSV", color: GREEN, keys: "spreadsheet sheet" },
+      { name: "CSV to Excel", from: [".csv"], to: "xlsx", page: "CSV", badge: "XLSX", color: GREEN, keys: "spreadsheet sheet" },
+      { name: "CSV to JSON", from: [".csv"], to: "json", page: "CSV", badge: "JSON", color: PURPLE },
+      { name: "JSON to CSV", from: [".json"], to: "csv", page: "JSON", badge: "CSV", color: TEAL },
+      { name: "Excel to JSON", from: [".xlsx"], to: "json", page: "XLS", badge: "JSON", color: PURPLE, keys: "spreadsheet" },
+      { name: "JPG to PNG", from: [".jpg", ".jpeg"], to: "png", page: "JPG", badge: "PNG", color: TEAL },
+      { name: "PNG to JPG", from: [".png"], to: "jpg", page: "PNG", badge: "JPG", color: GREEN },
+      { name: "HEIC to JPG", from: [".heic"], to: "jpg", page: "HEIC", badge: "JPG", color: ORANGE, keys: "iphone photo" },
+      { name: "WEBP to JPG", from: [".webp"], to: "jpg", page: "WEBP", badge: "JPG", color: GREEN },
+      { name: "Image to WEBP", from: ["image"], to: "webp", page: "IMG", badge: "WEBP", color: PURPLE },
+      { name: "SVG to PNG", from: [".svg"], to: "png", page: "SVG", badge: "PNG", color: TEAL, keys: "vector logo" },
+      { name: "Compress Image", from: ["raster"], to: "compress", page: "IMG", badge: "MIN", color: GREEN, keys: "shrink reduce smaller size photo" },
+      { name: "Resize Image", from: ["raster"], to: "resize", page: "IMG", badge: "SIZE", color: BLUE, keys: "scale dimensions smaller photo", option: { label: "New size", choices: [["75%", "75%"], ["50%", "50%"], ["25%", "25%"], ["1920px", "Longest side 1920 px"], ["1280px", "Longest side 1280 px"], ["800px", "Longest side 800 px"]] } },
+      { name: "Make Icon", from: ["image"], to: "ico", page: "IMG", badge: "ICO", color: ORANGE, keys: "favicon ico", hint: "Saves a .ico with sizes from 16 to 256 px" },
+      { name: "Remove Photo Info", from: ["raster"], to: "strip", page: "IMG", badge: "EXIF", color: GRAY, keys: "exif gps location metadata privacy", hint: "Removes location, camera, and date info" },
+      { name: "Read QR Code", from: ["image"], to: "readqr", page: "QR", badge: "TXT", color: GRAY, keys: "scan decode", hint: "Shows the text or link inside the QR code" },
+      { name: "Image to Text", mode: "ocr", page: "IMG", badge: "TXT", color: GRAY, keys: "ocr scan read" },
+      { name: "Video to MP3", from: ["media"], to: "mp3", page: "MP4", badge: "MP3", color: ORANGE, keys: "audio music sound" },
+      { name: "Video to M4A", from: ["media"], to: "m4a", page: "MP4", badge: "M4A", color: PURPLE, keys: "audio" },
+      { name: "Audio to WAV", from: ["media"], to: "wav", page: "MP3", badge: "WAV", color: BLUE, keys: "sound" },
+      { name: "Video to MP4", from: ["video"], to: "mp4", page: "MOV", badge: "MP4", color: BLUE, keys: "iphone mov" },
+      { name: "Video to GIF", from: ["video"], to: "gif", page: "MP4", badge: "GIF", color: PURPLE, keys: "animation", hint: "Uses the first 20 seconds" },
+      { name: "Compress Video", from: ["video"], to: "compress", page: "MP4", badge: "MIN", color: GREEN, keys: "shrink reduce smaller size", hint: "Saves a smaller MP4, up to 1280 px" },
+      { name: "Mute Video", from: ["video"], to: "mute", page: "MP4", badge: "MUTE", color: GRAY, keys: "remove audio silent sound" },
+      { name: "QR Code", mode: "qr", page: "QR", badge: "PNG", color: GRAY, keys: "generator make link url" },
+      { name: "Unit Converter", mode: "units", page: "cm", badge: "in", color: ORANGE, keys: "length weight temperature km miles kg lbs celsius fahrenheit volume area speed" },
+      { name: "Time Zones", mode: "time", page: "UTC", badge: "TIME", color: BLUE, keys: "clock timezone city world" },
+      { name: "Any Format", mode: "convert", page: "ANY", badge: "ALL", color: TEAL, keys: "universal" },
+    ];
+
+    function iconEl(tool) {
+      const icon = document.createElement("div");
+      icon.className = "icon";
+      icon.style.setProperty("--a", tool.color[0]);
+      icon.style.setProperty("--b", tool.color[1]);
+      const page = document.createElement("div");
+      page.className = "page";
+      page.textContent = tool.page;
+      const badge = document.createElement("div");
+      badge.className = "badge";
+      badge.textContent = tool.badge;
+      icon.append(page, badge);
+      return icon;
+    }
+
+    document.addEventListener("click", (e) => {
+      if (e.target.type === "file") window.pickerAccept = e.target.accept;
+    }, true);
+
+    const topbar = document.querySelector("#topbar");
+    let tool = null;
+
+    function showMode(name, t) {
+      document.querySelectorAll(".mode").forEach((m) => { m.hidden = m.id !== "mode-" + name; });
+      topbar.hidden = name === "home";
+      if (name === "home") document.querySelector("#search").focus();
+      document.querySelector("#crumb").textContent = t ? t.name : "";
+      document.querySelector("#crumb-icon").replaceChildren(...(t ? [iconEl(t)] : []));
+    }
+
+    function sameFormat(e, to) {
+      const x = e.slice(1);
+      return x === to || { jpg: "jpeg", tiff: "tif", html: "htm" }[to] === x;
+    }
+
+    function accepts(t) {
+      return t.from.flatMap((g) => GROUPS[g] || [g]).filter((e) => t.combine || !sameFormat(e, t.to));
+    }
+
+    const OPS = ["compress", "split", "rotate", "protect", "unlock", "resize", "strip", "mute", "readqr"];
+    const topt = document.querySelector("#topt");
+    let queue = [];
+
+    function optionValue() {
+      const input = topt.querySelector("input, select");
+      return input ? input.value : "";
+    }
+
+    function openTool(t) {
+      if (t.mode === "time") setNow();
+      if (t.mode) return showMode(t.mode, t);
+      tool = t;
+      queue = [];
+      renderQueue();
+      const label = t.from.map((g) => GROUP_LABEL[g] || g.slice(1).toUpperCase()).join(" or ");
+      const format = !OPS.includes(t.to);
+      document.querySelector("#tdrop-icon").replaceChildren(iconEl(t));
+      document.querySelector("#tdrop-title").textContent = "Drop " + label + " files here";
+      document.querySelector("#tdrop-hint").textContent = "or click to choose · " +
+        (t.hint || (format ? "converts to " + t.to.toUpperCase() : "you can download the result after"));
+      document.querySelector("#tpicker").accept = accepts(t).join(",");
+      document.querySelector("#tresults").innerHTML = "";
+      updateAll(document.querySelector("#tresults"));
+      topt.replaceChildren();
+      topt.hidden = !t.option;
+      if (t.option) {
+        const name = document.createElement("label");
+        name.textContent = t.option.label;
+        let input;
+        if (t.option.choices) {
+          input = document.createElement("select");
+          for (const [value, text] of t.option.choices) input.add(new Option(text, value));
+        } else {
+          input = document.createElement("input");
+          input.type = t.option.type;
+          input.placeholder = "Type the password";
+        }
+        topt.append(name, input);
+      }
+      say(document.querySelector("#tstatus"), t.combine ? "Add files, then click Merge." : "Drop files to convert them, then click Download.", false);
+      showMode("tool", t);
+    }
+
+    const grid = document.querySelector("#sections");
+    const search = document.querySelector("#search");
+    const tiles = TOOLS.map((t) => {
+      const btn = document.createElement("button");
+      btn.className = "app";
+      btn.append(iconEl(t), document.createTextNode(t.name));
+      btn.addEventListener("click", () => openTool(t));
+      grid.appendChild(btn);
+      const [nameFrom, nameTo = ""] = t.name.split(" to ");
+      const exts = (t.from || []).flatMap((g) => GROUPS[g] || [g]).map((e) => e.slice(1));
+      const from = [nameFrom, t.page, ...exts, ...(t.from || [])].join(" ").toLowerCase();
+      const to = [nameTo, t.badge, t.to || ""].join(" ").toLowerCase();
+      return { t, btn, from, to, all: [from, to, t.name, t.keys || ""].join(" ").toLowerCase() };
+    });
+
+    function words(text) {
+      return text.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+    }
+
+    function filterTools() {
+      const query = " " + search.value.toLowerCase() + " ";
+      const directed = query.includes(" to ");
+      const [fromPart, toPart = ""] = query.split(" to ");
+      let shown = 0;
+      for (const tile of tiles) {
+        const match = directed
+          ? words(fromPart).every((w) => tile.from.includes(w)) && words(toPart).every((w) => tile.to.includes(w))
+          : words(query).every((w) => tile.all.includes(w));
+        tile.btn.hidden = !match;
+        if (match) shown++;
+      }
+      document.querySelector("#nomatch").hidden = shown > 0;
+    }
+
+    search.addEventListener("input", filterTools);
+    search.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") tiles.find((tile) => !tile.btn.hidden)?.btn.click();
+      if (e.key === "Escape") { search.value = ""; filterTools(); }
+    });
+    document.querySelector("#back").addEventListener("click", () => showMode("home"));
+
+    window.openSettings = () => {
+      showMode("settings");
+      document.querySelector("#crumb").textContent = "Settings";
+      applyTheme();
+    };
+    document.querySelector("#gear").addEventListener("click", openSettings);
+    document.querySelectorAll("#themes button").forEach((b) => b.addEventListener("click", () => {
+      localStorage.setItem("theme", b.dataset.theme);
+      window.webkit?.messageHandlers?.theme?.postMessage(b.dataset.theme);
+      applyTheme();
+    }));
+    window.webkit?.messageHandlers?.theme?.postMessage(localStorage.getItem("theme") || "system");
+
+    const tstatus = document.querySelector("#tstatus");
+
+    const toastEl = document.querySelector("#toast");
+    let toastTimer;
+
+    function toast(message) {
+      toastEl.textContent = message;
+      toastEl.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3500);
+    }
+
+    window.onDownload = (event, detail) => {
+      if (event === "saved") toast("Saved: " + detail.replace(/^\/Users\/[^/]+/, "~"));
+      else toast("Download failed: " + detail);
+    };
+
+    function download(href, name) {
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = name || "";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function sizeText(bytes) {
+      if (bytes < 1024) return bytes + " bytes";
+      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + " KB";
+      return (bytes / 1024 / 1024).toFixed(1) + " MB";
+    }
+
+    function button(text, primary, onClick) {
+      const b = document.createElement("button");
+      b.textContent = text;
+      if (primary) b.className = "primary";
+      b.addEventListener("click", onClick);
+      return b;
+    }
+
+    function addCard(title, meta, list = document.querySelector("#tresults")) {
+      const li = document.createElement("li");
+      li.className = "card busy";
+      const badge = document.createElement("div");
+      badge.className = "ext";
+      const spin = document.createElement("div");
+      spin.className = "spinner";
+      badge.appendChild(spin);
+      const info = document.createElement("div");
+      info.className = "info";
+      const name = document.createElement("div");
+      name.className = "name";
+      name.textContent = title;
+      const sub = document.createElement("div");
+      sub.className = "meta";
+      sub.textContent = meta;
+      info.append(name, sub);
+      li.append(badge, info);
+      list.prepend(li);
+      return { li, badge, name, sub, list };
+    }
+
+    function cardDone(card, body, from) {
+      card.li.className = "card";
+      card.badge.textContent = (body.file.split(".").pop() || "file").toUpperCase().slice(0, 4);
+      card.name.textContent = body.file;
+      card.name.title = body.file;
+      card.sub.textContent = sizeText(body.size) + (from ? " · from " + from : "");
+      card.li.dataset.id = body.id;
+      card.li.append(
+        button("Open", false, () => fetch("/open", { method: "POST", body: JSON.stringify({ id: body.id }) })),
+        button("Download", true, () => download("/download/" + body.id, body.file)),
+      );
+      updateAll(card.list);
+    }
+
+    function cardText(card, text, from) {
+      card.li.className = "card";
+      card.badge.textContent = "TEXT";
+      card.name.textContent = text;
+      card.name.title = text;
+      card.sub.textContent = "from " + from;
+      card.li.append(button("Copy", true, (e) => { copyText(text); e.target.textContent = "Copied"; toast("Copied to clipboard"); }));
+    }
+
+    function cardError(card, message, from) {
+      card.li.className = "card bad";
+      card.badge.textContent = "!";
+      card.name.textContent = message;
+      card.name.title = message;
+      card.sub.textContent = from ? "Couldn't convert " + from : "Something went wrong";
+    }
+
+    function updateAll(list) {
+      if (list.id !== "tresults") return;
+      const ids = [...list.querySelectorAll(".card[data-id]")].map((li) => li.dataset.id);
+      document.querySelector("#thead").hidden = ids.length === 0;
+      const all = document.querySelector("#tall");
+      all.hidden = ids.length < 2;
+      all.textContent = "Download all (" + ids.length + ")";
+    }
+
+    document.querySelector("#tall").addEventListener("click", () => {
+      const ids = [...document.querySelectorAll("#tresults .card[data-id]")].map((li) => li.dataset.id);
+      download("/zip?ids=" + ids.join(","), "U Converter files.zip");
+    });
+
+    function copyText(text) {
+      const area = document.createElement("textarea");
+      area.value = text;
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand("copy");
+      area.remove();
+    }
+
+    async function post(url, body) {
+      const res = await fetch(url, { method: "POST", body });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Something went wrong");
+      return data;
+    }
+
+    async function runTool(list) {
+      const t = tool;
+      const exts = accepts(t);
+      const all = [...list];
+      const ok = all.filter((f) => exts.includes(ext(f.name)));
+      const skipped = all.length - ok.length;
+      if (skipped) {
+        const wrong = all.find((f) => !ok.includes(f)).name;
+        const what = skipped === 1 ? "“" + wrong + "” was" : skipped + " files were";
+        toast(what + " skipped. " + t.name + " only takes " + exts.join(", ") + " files.");
+      }
+      if (!ok.length) return say(tstatus, t.name + " only takes " + exts.join(", ") + " files.", true);
+      if (t.combine) {
+        queue = queue.concat(ok);
+        renderQueue();
+        return say(tstatus, queue.length + " file" + (queue.length === 1 ? "" : "s") + " ready to merge." + (skipped ? " " + skipped + " skipped (wrong type)." : ""), skipped > 0);
+      }
+      const opt = optionValue();
+      if (t.option?.required && !opt) return say(tstatus, "Type a " + t.option.label.toLowerCase() + " first.", true);
+      let failed = 0;
+      const cards = ok.slice().reverse().map((file) => addCard(file.name, "Waiting…")).reverse();
+      for (let i = 0; i < ok.length; i++) {
+        const file = ok[i];
+        const card = cards[i];
+        card.sub.textContent = "Converting… large files can take a minute";
+        say(tstatus, "Converting " + (i + 1) + " of " + ok.length + "…", false);
+        try {
+          const url = "/convert?name=" + encodeURIComponent(file.name) + "&to=" + t.to + "&opt=" + encodeURIComponent(opt);
+          const body = await post(url, file);
+          if (body.text !== undefined) cardText(card, body.text, file.name);
+          else cardDone(card, body, file.name);
+        } catch (err) {
+          failed++;
+          cardError(card, err.message || String(err), file.name);
+        }
+      }
+      const parts = [failed ? failed + " of " + ok.length + " failed" : t.to === "readqr" ? "Done" : "Done. Click Download to save"];
+      if (skipped) parts.push(skipped + " skipped (wrong type)");
+      say(tstatus, parts.join(" · ") + ".", failed > 0 || skipped > 0);
+    }
+
+    const tmerge = document.querySelector("#tmerge");
+
+    function renderQueue() {
+      const list = document.querySelector("#tqueue");
+      list.replaceChildren();
+      document.querySelector("#tcombine").hidden = !queue.length;
+      queue.forEach((file, i) => {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        name.textContent = (i + 1) + ". " + file.name;
+        const remove = document.createElement("button");
+        remove.className = "x";
+        remove.textContent = "Remove";
+        remove.addEventListener("click", () => { queue.splice(i, 1); renderQueue(); });
+        li.append(name, remove);
+        list.appendChild(li);
+      });
+      const min = tool?.min || 1;
+      tmerge.disabled = queue.length < min;
+      tmerge.textContent = queue.length < min ? "Add at least " + min + " files" : "Merge " + queue.length + " file" + (queue.length === 1 ? "" : "s") + " into one PDF";
+    }
+
+    tmerge.addEventListener("click", async () => {
+      const files = queue;
+      tmerge.disabled = true;
+      const card = addCard("Merging " + files.length + " files…", "This can take a moment");
+      say(tstatus, "Merging…", false);
+      try {
+        const payload = await Promise.all(files.map(async (f) => ({ name: f.name, data: await b64(f) })));
+        const body = await post("/combine", JSON.stringify({ files: payload }));
+        cardDone(card, body, files.length + " files");
+        queue = [];
+        renderQueue();
+        say(tstatus, "Done. Click Download to save.", false);
+      } catch (err) {
+        cardError(card, err.message || String(err));
+        say(tstatus, "Merge failed.", true);
+        renderQueue();
+      }
+    });
+
+    const UNITS = {
+      Length: [["Millimeters", 0.001], ["Centimeters", 0.01], ["Meters", 1], ["Kilometers", 1000], ["Inches", 0.0254], ["Feet", 0.3048], ["Yards", 0.9144], ["Miles", 1609.344]],
+      Weight: [["Milligrams", 1e-6], ["Grams", 0.001], ["Kilograms", 1], ["Metric tons", 1000], ["Ounces", 0.028349523125], ["Pounds", 0.45359237], ["Stones", 6.35029318]],
+      Temperature: [["Celsius", "c"], ["Fahrenheit", "f"], ["Kelvin", "k"]],
+      Volume: [["Milliliters", 0.001], ["Liters", 1], ["Teaspoons (US)", 0.00492892], ["Tablespoons (US)", 0.0147868], ["Fluid ounces (US)", 0.0295735], ["Cups (US)", 0.236588], ["Pints (US)", 0.473176], ["Quarts (US)", 0.946353], ["Gallons (US)", 3.78541]],
+      Area: [["Square centimeters", 1e-4], ["Square meters", 1], ["Square kilometers", 1e6], ["Square inches", 0.00064516], ["Square feet", 0.09290304], ["Acres", 4046.8564224], ["Hectares", 10000], ["Square miles", 2589988.110336]],
+      Speed: [["Meters per second", 1], ["Kilometers per hour", 1 / 3.6], ["Miles per hour", 0.44704], ["Knots", 0.514444]],
+      Time: [["Seconds", 1], ["Minutes", 60], ["Hours", 3600], ["Days", 86400], ["Weeks", 604800], ["Years", 31557600]],
+      Data: [["Bytes", 1], ["Kilobytes", 1e3], ["Megabytes", 1e6], ["Gigabytes", 1e9], ["Terabytes", 1e12]],
+    };
+    const uval = document.querySelector("#uval");
+    const ufrom = document.querySelector("#ufrom");
+    let ucat = "Length";
+
+    function toKelvin(v, u) { return u === "c" ? v + 273.15 : u === "f" ? (v - 32) * 5 / 9 + 273.15 : v; }
+    function fromKelvin(k, u) { return u === "c" ? k - 273.15 : u === "f" ? (k - 273.15) * 9 / 5 + 32 : k; }
+
+    function niceNumber(n) {
+      if (!isFinite(n)) return "—";
+      if (n !== 0 && (Math.abs(n) < 1e-6 || Math.abs(n) >= 1e15)) return n.toExponential(4);
+      return Number(n.toPrecision(10)).toLocaleString(undefined, { maximumFractionDigits: 6 });
+    }
+
+    function renderUnits() {
+      const units = UNITS[ucat];
+      const v = parseFloat(uval.value);
+      const from = units.find(([name]) => name === ufrom.value) || units[0];
+      const list = document.querySelector("#uall");
+      list.replaceChildren();
+      for (const [name, factor] of units) {
+        let result;
+        if (isNaN(v)) result = NaN;
+        else if (ucat === "Temperature") result = fromKelvin(toKelvin(v, from[1]), factor);
+        else result = v * from[1] / factor;
+        const li = document.createElement("li");
+        const label = document.createElement("span");
+        label.textContent = name;
+        const value = document.createElement("b");
+        value.textContent = niceNumber(result);
+        li.append(label, value);
+        list.appendChild(li);
+      }
+    }
+
+    function pickCategory(cat) {
+      ucat = cat;
+      document.querySelectorAll("#ucats button").forEach((b) => b.classList.toggle("on", b.textContent === cat));
+      ufrom.replaceChildren(...UNITS[cat].map(([name]) => new Option(name, name)));
+      ufrom.selectedIndex = cat === "Temperature" ? 0 : Math.min(2, UNITS[cat].length - 1);
+      renderUnits();
+    }
+
+    for (const cat of Object.keys(UNITS)) {
+      const b = document.createElement("button");
+      b.textContent = cat;
+      b.addEventListener("click", () => pickCategory(cat));
+      document.querySelector("#ucats").appendChild(b);
+    }
+    uval.addEventListener("input", renderUnits);
+    ufrom.addEventListener("change", renderUnits);
+    pickCategory("Length");
+
+    const LOCAL_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const ZONES = Intl.supportedValuesOf ? Intl.supportedValuesOf("timeZone") : [LOCAL_ZONE, "UTC"];
+    const tzwhen = document.querySelector("#tzwhen");
+    const tzfrom = document.querySelector("#tzfrom");
+    let tzcities = JSON.parse(localStorage.getItem("tzcities") || "null") ||
+      ["UTC", "America/New_York", "America/Los_Angeles", "Europe/London", "Europe/Paris", "Asia/Dubai", "Asia/Kolkata", "Asia/Dhaka", "Asia/Tokyo", "Australia/Sydney"];
+
+    function city(zone) { return zone.split("/").pop().replace(/_/g, " "); }
+
+    function parts(zone, ms) {
+      const fmt = new Intl.DateTimeFormat("en-US", { timeZone: zone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      return Object.fromEntries(fmt.formatToParts(ms).map((p) => [p.type, p.value]));
+    }
+
+    function offsetMinutes(zone, ms) {
+      const p = parts(zone, ms);
+      return (Date.UTC(p.year, p.month - 1, p.day, p.hour % 24, p.minute, p.second) - Math.floor(ms / 1000) * 1000) / 60000;
+    }
+
+    function wallToEpoch(value, zone) {
+      const [d, t] = value.split("T");
+      const [y, mo, da] = d.split("-").map(Number);
+      const [h, mi] = t.split(":").map(Number);
+      const guess = Date.UTC(y, mo - 1, da, h, mi);
+      const first = guess - offsetMinutes(zone, guess) * 60000;
+      return guess - offsetMinutes(zone, first) * 60000;
+    }
+
+    function setNow() {
+      const p = parts(tzfrom.value, Date.now());
+      tzwhen.value = `${p.year}-${p.month}-${p.day}T${String(p.hour % 24).padStart(2, "0")}:${p.minute}`;
+      renderZones();
+    }
+
+    function renderZones() {
+      const list = document.querySelector("#tzlist");
+      list.replaceChildren();
+      if (!tzwhen.value) return;
+      const ms = wallToEpoch(tzwhen.value, tzfrom.value);
+      const base = offsetMinutes(tzfrom.value, ms);
+      tzcities.forEach((zone, i) => {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        name.textContent = city(zone) + (zone === LOCAL_ZONE ? " (this Mac)" : "");
+        const diff = (offsetMinutes(zone, ms) - base) / 60;
+        const small = document.createElement("small");
+        small.textContent = diff === 0 ? "same time" : (diff > 0 ? "+" : "") + diff + "h";
+        const time = document.createElement("b");
+        time.textContent = new Intl.DateTimeFormat(undefined, { timeZone: zone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(ms);
+        const remove = document.createElement("button");
+        remove.className = "x";
+        remove.textContent = "Remove";
+        remove.addEventListener("click", () => { tzcities.splice(i, 1); saveCities(); });
+        li.append(name, small, time, remove);
+        list.appendChild(li);
+      });
+    }
+
+    function saveCities() {
+      localStorage.setItem("tzcities", JSON.stringify(tzcities));
+      renderZones();
+    }
+
+    for (const select of [tzfrom, document.querySelector("#tzadd")]) {
+      select.replaceChildren(...ZONES.map((z) => new Option(z.replace(/_/g, " "), z)));
+    }
+    tzfrom.value = LOCAL_ZONE;
+    tzwhen.addEventListener("input", renderZones);
+    tzfrom.addEventListener("change", renderZones);
+    document.querySelector("#tznow").addEventListener("click", setNow);
+    document.querySelector("#tzaddbtn").addEventListener("click", () => {
+      const zone = document.querySelector("#tzadd").value;
+      if (!tzcities.includes(zone)) tzcities.push(zone);
+      saveCities();
+    });
+    setNow();
+
+    const tpicker = document.querySelector("#tpicker");
+    tpicker.addEventListener("change", () => { runTool(tpicker.files); tpicker.value = ""; });
+
+    let dragDepth = 0;
+    document.addEventListener("dragenter", (e) => { e.preventDefault(); dragDepth++; document.body.classList.add("dragging"); });
+    document.addEventListener("dragleave", () => { if (--dragDepth <= 0) { dragDepth = 0; document.body.classList.remove("dragging"); } });
+    document.addEventListener("dragover", (e) => e.preventDefault());
+    document.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dragDepth = 0;
+      document.body.classList.remove("dragging");
+      if (!document.querySelector("#mode-tool").hidden) runTool(e.dataTransfer.files);
+    });
+
+    function say(el, message, bad) {
+      el.textContent = message;
+      el.classList.toggle("bad", !!bad);
+    }
+
+    function ext(name) {
+      const dot = name.lastIndexOf(".");
+      return dot < 0 ? "" : name.slice(dot).toLowerCase();
+    }
+
+    const cdrop = document.querySelector("#cdrop");
+    const cpicker = document.querySelector("#cpicker");
+    const cconvert = document.querySelector("#cconvert");
+    const cqueue = document.querySelector("#cqueue");
+    const results = document.querySelector("#results");
+    const cstatus = document.querySelector("#cstatus");
+    let formats = {};
+    let jobs = [];
+
+    fetch("/formats").then((r) => r.json()).then((f) => {
+      formats = f;
+      cpicker.accept = Object.keys(f).join(",");
+    });
+
+    function renderJobs() {
+      cqueue.innerHTML = "";
+      cconvert.disabled = !jobs.length;
+      cdrop.textContent = jobs.length
+        ? jobs.length + " file" + (jobs.length === 1 ? "" : "s") + " ready"
+        : "Drop files here";
+      for (const job of jobs) {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        name.textContent = job.file.name;
+        name.title = job.file.name;
+        const pick = document.createElement("select");
+        for (const to of formats[ext(job.file.name)]) {
+          const opt = document.createElement("option");
+          opt.value = to;
+          opt.textContent = to.toUpperCase();
+          pick.appendChild(opt);
+        }
+        pick.value = job.to;
+        pick.addEventListener("change", () => { job.to = pick.value; });
+        li.append(name, pick);
+        cqueue.appendChild(li);
+      }
+    }
+
+    function addJobs(list) {
+      const all = [...list];
+      const ok = all.filter((f) => formats[ext(f.name)]);
+      jobs = jobs.concat(ok.map((file) => ({ file, to: formats[ext(file.name)][0] })));
+      renderJobs();
+      const skipped = all.length - ok.length;
+      say(cstatus, skipped ? skipped + " file(s) skipped: that type isn't supported." : "Pick a format next to each file, then click Convert.", skipped > 0);
+    }
+
+    cpicker.addEventListener("change", () => { addJobs(cpicker.files); cpicker.value = ""; });
+    cdrop.addEventListener("dragover", (e) => { e.preventDefault(); cdrop.classList.add("over"); });
+    cdrop.addEventListener("dragleave", () => cdrop.classList.remove("over"));
+    cdrop.addEventListener("drop", (e) => {
+      e.preventDefault();
+      cdrop.classList.remove("over");
+      addJobs(e.dataTransfer.files);
+    });
+    document.querySelector("#cclear").addEventListener("click", () => {
+      jobs = [];
+      renderJobs();
+      say(cstatus, "Pick a format next to each file, then click Convert.", false);
+    });
+
+    cconvert.addEventListener("click", async () => {
+      cconvert.disabled = true;
+      const todo = jobs;
+      jobs = [];
+      renderJobs();
+      let failed = 0;
+      for (let i = 0; i < todo.length; i++) {
+        const { file, to } = todo[i];
+        say(cstatus, "Converting " + (i + 1) + " of " + todo.length + ": " + file.name + " → " + to.toUpperCase() + "…", false);
+        if (results.querySelector(".hint")) results.innerHTML = "";
+        const card = addCard(file.name, "Converting to " + to.toUpperCase() + "…", results);
+        try {
+          cardDone(card, await post("/convert?name=" + encodeURIComponent(file.name) + "&to=" + to, file), file.name);
+        } catch (err) {
+          failed++;
+          cardError(card, err.message || String(err), file.name);
+        }
+      }
+      say(cstatus, failed ? failed + " of " + todo.length + " failed." : "Done. Click Download to save.", failed > 0);
+    });
+
+    const qrtext = document.querySelector("#qrtext");
+    const qrkind = document.querySelector("#qrkind");
+    const qrimg = document.querySelector("#qrimg");
+    const qrsave = document.querySelector("#qrsave");
+    const qrstatus = document.querySelector("#qrstatus");
+
+    async function makeQr() {
+      try {
+        const res = await fetch("/qr", { method: "POST", body: JSON.stringify({ text: qrtext.value, kind: "png" }) });
+        if (!res.ok) throw new Error((await res.json()).error);
+        if (qrimg.src) URL.revokeObjectURL(qrimg.src);
+        qrimg.src = URL.createObjectURL(await res.blob());
+        qrimg.hidden = false;
+        document.querySelector("#qrhint").hidden = true;
+        qrsave.disabled = false;
+        say(qrstatus, "Ready. Click Download to save it.", false);
+      } catch (err) {
+        say(qrstatus, err.message || String(err), true);
+      }
+    }
+
+    document.querySelector("#qrmake").addEventListener("click", makeQr);
+    qrtext.addEventListener("keydown", (e) => { if (e.key === "Enter") makeQr(); });
+    qrtext.addEventListener("input", () => { qrsave.disabled = true; });
+    qrsave.addEventListener("click", async () => {
+      try {
+        const body = await post("/qr", JSON.stringify({ text: qrtext.value, kind: qrkind.value, keep: true }));
+        download("/download/" + body.id, body.file);
+      } catch (err) {
+        say(qrstatus, err.message || String(err), true);
+      }
+    });
   </script>
 </body>
 </html>

@@ -5,23 +5,36 @@ GET  /health
 GET  /
 POST /ocr   {"image": "<jpeg-base64>"}
 POST /file  {"name": "scan.pdf", "data": "<file-base64>"}
+GET  /formats
+POST /convert?name=in.pdf&to=docx&opt=   (raw file body, returns {"id", "file", "size"})
+POST /convert?name=code.png&to=readqr     (returns {"text": ...})
+POST /combine {"files": [{"name": "a.pdf", "data": "<base64>"}]}   (one merged PDF)
+POST /qr    {"text": "...", "kind": "png", "keep": false}
+GET  /download/<id>          GET /zip?ids=<id>,<id>
+POST /open  {"id": "..."}
 """
 
 import base64
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 import tempfile
 import threading
+import time
+import uuid
+import zipfile
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from io import BytesIO
 from pathlib import Path
-from urllib.parse import unquote
+from urllib.parse import parse_qs, quote, unquote, urlsplit
 
 from PIL import Image
 
+from converters import FORMATS, combine, convert, qr_code, read_qr
 from documents import fit, to_jpegs
 
 ROOT = Path(__file__).resolve().parent
@@ -76,6 +89,38 @@ def history_dir() -> Path:
         base = base / "image-to-text" / "history"
     base.mkdir(parents=True, exist_ok=True)
     return base
+
+
+def outbox() -> Path:
+    if sys.platform == "darwin":
+        base = Path.home() / "Library/Caches/U Converter/Converted"
+    else:
+        base = Path.home() / ".cache/u-converter/converted"
+    base.mkdir(parents=True, exist_ok=True)
+    return base
+
+
+def keep(name: str, data: bytes) -> dict:
+    """Hold a result until the user downloads it."""
+    item = uuid.uuid4().hex[:12]
+    folder = outbox() / item
+    folder.mkdir()
+    path = folder / (Path(name).name or "converted")
+    path.write_bytes(data)
+    return {"id": item, "file": path.name, "size": len(data)}
+
+
+def kept(item: str) -> Path | None:
+    folder = outbox() / Path(item).name
+    files = sorted(folder.iterdir()) if folder.is_dir() else []
+    return files[0] if files else None
+
+
+def clear_old_results(hours: int = 24) -> None:
+    cutoff = time.time() - hours * 3600
+    for folder in outbox().iterdir():
+        if folder.is_dir() and folder.stat().st_mtime < cutoff:
+            shutil.rmtree(folder, ignore_errors=True)
 
 
 def slug(text: str) -> str:
@@ -209,7 +254,8 @@ class H(BaseHTTPRequestHandler):
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(raw)))
         if filename:
-            self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+            plain = filename.encode("ascii", "replace").decode().replace('"', "").replace("?", "_")
+            self.send_header("Content-Disposition", f"attachment; filename=\"{plain}\"; filename*=UTF-8''{quote(filename)}")
         self.end_headers()
         self.wfile.write(raw)
 
@@ -224,6 +270,30 @@ class H(BaseHTTPRequestHandler):
         if path in ("/", "/index.html"):
             raw = PAGE.encode()
             self.send_bytes(200, raw, "text/html; charset=utf-8")
+            return
+        if path == "/formats":
+            self.send_json(200, FORMATS)
+            return
+        if path.startswith("/download/"):
+            target = kept(path[len("/download/") :])
+            if not target:
+                self.send_json(404, {"error": "This file is gone. Convert it again."})
+                return
+            self.send_bytes(200, target.read_bytes(), "application/octet-stream", target.name)
+            return
+        if path == "/zip":
+            ids = parse_qs(urlsplit(self.path).query).get("ids", [""])[0].split(",")
+            buf = BytesIO()
+            names = set()
+            with zipfile.ZipFile(buf, "w") as z:
+                for target in filter(None, map(kept, ids)):
+                    name, n = target.name, 2
+                    while name in names:
+                        name = f"{target.stem} ({n}){target.suffix}"
+                        n += 1
+                    names.add(name)
+                    z.write(target, name)
+            self.send_bytes(200, buf.getvalue(), "application/zip", "U Converter files.zip")
             return
         if path == "/history":
             files = sorted(history_dir().glob("*.txt"), key=lambda p: p.stat().st_mtime, reverse=True)
@@ -241,6 +311,9 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = self.path.split("?", 1)[0]
+        if path in ("/convert", "/combine", "/qr", "/open"):
+            self.handle_tool(path)
+            return
         if path not in ("/ocr", "/file"):
             self.send_json(404, {"error": "not found"})
             return
@@ -269,8 +342,50 @@ class H(BaseHTTPRequestHandler):
             except (BrokenPipeError, ConnectionError):
                 print("client disconnected", flush=True)
 
+    def handle_tool(self, path):
+        n = int(self.headers.get("Content-Length", 0))
+        raw = self.rfile.read(n)
+        try:
+            if path == "/convert":
+                query = parse_qs(urlsplit(self.path).query)
+                name = query.get("name", ["upload"])[0]
+                to = query.get("to", [""])[0]
+                if to == "readqr":
+                    self.send_json(200, {"text": read_qr(name, raw)})
+                    return
+                self.send_json(200, keep(*convert(name, raw, to, query.get("opt", [""])[0])))
+                return
+            body = json.loads(raw or b"{}")
+            if path == "/combine":
+                files = [(str(f["name"]), base64.b64decode(f["data"])) for f in body.get("files", [])]
+                self.send_json(200, keep(*combine(files)))
+                return
+            if path == "/open":
+                target = kept(str(body.get("id", "")))
+                if not target:
+                    self.send_json(404, {"error": "This file is gone. Convert it again."})
+                    return
+                subprocess.run(["open", str(target)], check=False)
+                self.send_json(200, {"ok": True})
+                return
+            kind = "svg" if body.get("kind") == "svg" else "png"
+            data = qr_code(str(body.get("text", "")), kind)
+            if body.get("keep"):
+                self.send_json(200, keep(f"qr-code.{kind}", data))
+                return
+            self.send_bytes(200, data, "image/svg+xml" if kind == "svg" else "image/png")
+        except (BrokenPipeError, ConnectionError):
+            print("client disconnected", flush=True)
+        except Exception as e:
+            print(f"{path} failed:", e, flush=True)
+            try:
+                self.send_json(400 if isinstance(e, ValueError) else 500, {"error": str(e)})
+            except (BrokenPipeError, ConnectionError):
+                print("client disconnected", flush=True)
+
 
 if __name__ == "__main__":
+    clear_old_results()
     threading.Thread(target=load_model, daemon=True).start()
     print(f"Unlimited-OCR on http://127.0.0.1:{PORT}", flush=True)
     ThreadingHTTPServer(("127.0.0.1", PORT), H).serve_forever()

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Image to Text.
+"""U Converter.
 
 Open the local app:
     python3 app.py
