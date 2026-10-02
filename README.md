@@ -2,7 +2,7 @@
 
 Mac app that converts files on your computer: PDF, Word, images, video, and audio, plus QR codes. Its Image to Text tool turns a PDF, PNG, or JPG into text with [baidu/Unlimited-OCR](https://huggingface.co/baidu/Unlimited-OCR). Files are not uploaded anywhere.
 
-**Download:** [U Converter (zip)](https://github.com/Eshan-khan1/image-to-text/archive/refs/heads/main.zip)
+**Download:** [U Converter (zip)](https://github.com/Eshan-khan1/u-converter/archive/refs/heads/main.zip)
 
 Unzip that file, then follow [Open it on a Mac](#open-it-on-a-mac) below.
 
@@ -52,7 +52,7 @@ The window talks only to a server on this Mac at `127.0.0.1:8766`. History is sa
 
 ## Open it on a Mac
 
-1. Download and unzip [U Converter (zip)](https://github.com/Eshan-khan1/image-to-text/archive/refs/heads/main.zip).
+1. Download and unzip [U Converter (zip)](https://github.com/Eshan-khan1/u-converter/archive/refs/heads/main.zip).
 2. Open Terminal, go into the unzipped folder, and run:
 
 ```bash
@@ -69,7 +69,7 @@ The app starts the reader and opens the window. Xcode Command Line Tools must be
 
 ## Project page
 
-Repository: https://github.com/Eshan-khan1/image-to-text
+Repository: https://github.com/Eshan-khan1/u-converter
 
 The same window is available in a browser from the project folder:
 
