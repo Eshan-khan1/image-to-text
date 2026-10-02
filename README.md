@@ -6,7 +6,10 @@ Mac app that converts files on your computer: PDF, Word, images, video, and audi
 
 Unzip that file, then follow [Open it on a Mac](#open-it-on-a-mac) below.
 
-![U Converter window](docs/mac-window.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/mac-window-dark.png" />
+  <img alt="U Converter home screen with one icon per conversion" src="docs/mac-window.png" />
+</picture>
 
 ## What it does
 
